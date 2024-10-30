@@ -5,8 +5,8 @@ The source code for the paper "Fast Partial-modal Online Cross-Modal Hashing".
 1. Download datasets and pre-trained scmh&ucmh models
 
 ```
-url:  https://pan.baidu.com/s/1cVwg3UueZCZ7We63-IsYwg
-code: 2ov3
+url:  https://pan.baidu.com/s/1V8fupfsI1I9wt9N2E95x2A?pwd=2024
+code: 2024
 ```
 
 2. Change the value of `root` in file `configs\config.yaml` to `/path/to/dataset`.

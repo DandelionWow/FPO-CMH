@@ -42,6 +42,7 @@ class OnlineLearning():
 
     def fpocmh(self):
         self.novel_categories = []
+        # anchor buffer pool
         self.clip_dict = {
             'image':{},
             'text':{},
@@ -92,24 +93,24 @@ class OnlineLearning():
     def _update_bank(self, streaming_data: StreamingData):
         # Iterate over the category of streaming_data
         for category_idx in streaming_data.streaming_data_categories:
-            clazz = self.categories[category_idx]
+            category = self.categories[category_idx]
             bank_idx = self.category_idx_2_bank_idx.get(category_idx)
             
             if bank_idx is None:
-                # get centre
-                clip_centre = self.clip_dict[streaming_data.streaming_data_type_str].get(category_idx)
-                code_centre = self.code_dict[streaming_data.streaming_data_type_str].get(category_idx)
-                # is None -> init centre
-                if (clip_centre is None) or (code_centre is None):
-                    clip_centre = self._init_clip_centre(streaming_data.streaming_data)
-                    code_centre = self._init_code_centre(streaming_data.streaming_data, streaming_data.hash_model)
+                # get anchor
+                clip_anchor = self.clip_dict[streaming_data.streaming_data_type_str].get(category_idx)
+                code_anchor = self.code_dict[streaming_data.streaming_data_type_str].get(category_idx)
+                # is None -> init anchor
+                if (clip_anchor is None) or (code_anchor is None):
+                    clip_anchor = self._init_clip_anchor(streaming_data.streaming_data)
+                    code_anchor = self._init_code_anchor(streaming_data.streaming_data, streaming_data.hash_model)
                     self.clip_update_counter_dict[streaming_data.streaming_data_type_str][category_idx] = 0
-                # calc centre
-                clip_centre = torch.mean(torch.cat([streaming_data.streaming_data, clip_centre]), dim=0, keepdim=True)
-                code_centre = torch.mean(torch.cat([streaming_data.streaming_data_rcode_no_grad, code_centre]), dim=0, keepdim=True)
+                # calc anchor
+                clip_anchor = torch.mean(torch.cat([streaming_data.streaming_data, clip_anchor]), dim=0, keepdim=True)
+                code_anchor = torch.mean(torch.cat([streaming_data.streaming_data_rcode_no_grad, code_anchor]), dim=0, keepdim=True)
                 # update 
-                self.clip_dict[streaming_data.streaming_data_type_str][category_idx] = clip_centre
-                self.code_dict[streaming_data.streaming_data_type_str][category_idx] = code_centre
+                self.clip_dict[streaming_data.streaming_data_type_str][category_idx] = clip_anchor
+                self.code_dict[streaming_data.streaming_data_type_str][category_idx] = code_anchor
                 # count
                 self.clip_update_counter_dict[streaming_data.streaming_data_type_str][category_idx] += 1
 
@@ -127,21 +128,21 @@ class OnlineLearning():
                     self.T_code_bank = torch.cat([self.T_code_bank, self.code_dict['text'].get(category_idx)])
                     # save idx
                     self.category_idx_2_bank_idx[category_idx] = len(self.I_clip_bank) - 1 # 0-based
-                    self.novel_categories.append(clazz)
+                    self.novel_categories.append(category)
             else:
-                clip_centre = streaming_data.clip_bank[bank_idx].unsqueeze(0)
-                code_centre = streaming_data.code_bank[bank_idx].unsqueeze(0)
-                clip_centre = torch.mean(torch.cat([streaming_data.streaming_data, clip_centre]), dim=0, keepdim=True)
-                code_centre = torch.mean(torch.cat([streaming_data.streaming_data_rcode_no_grad, code_centre]), dim=0, keepdim=True)
+                clip_anchor = streaming_data.clip_bank[bank_idx].unsqueeze(0)
+                code_anchor = streaming_data.code_bank[bank_idx].unsqueeze(0)
+                clip_anchor = torch.mean(torch.cat([streaming_data.streaming_data, clip_anchor]), dim=0, keepdim=True)
+                code_anchor = torch.mean(torch.cat([streaming_data.streaming_data_rcode_no_grad, code_anchor]), dim=0, keepdim=True)
             
-            # The enabled centre is updated to the bank
+            # The enabled anchor is updated to the bank
             if bank_idx:
                 if streaming_data.is_image:
-                    self.I_clip_bank[bank_idx] = clip_centre.squeeze(0)
-                    self.I_code_bank[bank_idx] = code_centre.squeeze(0)
+                    self.I_clip_bank[bank_idx] = clip_anchor.squeeze(0)
+                    self.I_code_bank[bank_idx] = code_anchor.squeeze(0)
                 else:
-                    self.T_clip_bank[bank_idx] = clip_centre.squeeze(0)
-                    self.T_code_bank[bank_idx] = code_centre.squeeze(0)
+                    self.T_clip_bank[bank_idx] = clip_anchor.squeeze(0)
+                    self.T_code_bank[bank_idx] = code_anchor.squeeze(0)
 
 
     def _get_streaming_data_dict(self, streaming_data, streaming_data_type):
@@ -186,14 +187,14 @@ class OnlineLearning():
         rehearsal_loss.backward()     
 
 
-    def _init_clip_centre(self, x:torch.Tensor):
+    def _init_clip_anchor(self, x:torch.Tensor):
         if len(x.size()) == 1:
             x = x.unsqueeze(0)
         return x
     
 
     @torch.no_grad()
-    def _init_code_centre(self, x:torch.Tensor, model):
+    def _init_code_anchor(self, x:torch.Tensor, model):
         if len(x.size()) == 1:
             x = x.unsqueeze(0)
         return model(x.cuda())

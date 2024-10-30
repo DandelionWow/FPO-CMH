@@ -88,13 +88,13 @@ def get_clip_category_feature(tokenizer, clip_model, template, clip_vocab_path):
         template = [template]
     
     categories_feature = []
-    for clazz in categories:
-        template_clazz = [t.format(clazz) for t in template]
-        tokenized_template_clazz = tokenizer(template_clazz, padding=True, truncation=False, return_tensors="pt")
-        tokenized_template_clazz['input_ids'] = tokenized_template_clazz['input_ids'].cuda()
-        tokenized_template_clazz['attention_mask'] = tokenized_template_clazz['attention_mask'].cuda()
+    for category in categories:
+        template_category = [t.format(category) for t in template]
+        tokenized_template_category = tokenizer(template_category, padding=True, truncation=False, return_tensors="pt")
+        tokenized_template_category['input_ids'] = tokenized_template_category['input_ids'].cuda()
+        tokenized_template_category['attention_mask'] = tokenized_template_category['attention_mask'].cuda()
         with torch.no_grad():
-            category_feature = clip_model.get_text_features(**tokenized_template_clazz)
+            category_feature = clip_model.get_text_features(**tokenized_template_category)
         category_feature /= category_feature.norm(dim=-1, keepdim=True)
         category_feature = category_feature.mean(dim=0)
         category_feature /= category_feature.norm()

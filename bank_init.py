@@ -32,7 +32,7 @@ class BankInit():
         offline_categories = []
         # image
         I_offline_categories = set()
-        I_plabels = torch.zeros(len(image_features), len(self.categories))
+        I_plabels = torch.zeros(len(image_features), len(self.categories)) # pseudo label
         for idx, image_feature in enumerate(image_features):
             top = zs_classifier(image_feature, self.categories_feature, self.args.theta)
             if len(top) == 0:
@@ -42,7 +42,7 @@ class BankInit():
                 I_offline_categories.add(i)
         # text
         T_offline_categories = set()
-        T_plabels = torch.zeros(len(text_features), len(self.categories))
+        T_plabels = torch.zeros(len(text_features), len(self.categories)) # pseudo label
         for idx, text_feature in enumerate(text_features):
             top = zs_classifier(text_feature, self.categories_feature, self.args.theta)
             if len(top) == 0:
