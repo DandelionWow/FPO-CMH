@@ -1,0 +1,5 @@
+torch==1.10.2+cu102 -f https://download.pytorch.org/whl/cu102/torch_stable.html
+pyyaml
+tqdm
+h5py
+numpy

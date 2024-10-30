@@ -1,0 +1,26 @@
+root: '/path/to/dataset'
+mode: 'online_learning' # bank_init/online_learning/eval
+phase: 'online' # offline/online
+dataset_name: 'MSCOCO' # MIRFlickr/NUSWIDE/MSCOCO
+shuffle: True # False/True
+
+model_name: 'cirh' # djsrh/jdsh/dgcpn/cirh//dcmh/dadh
+code_len: 16 # 16/32/64/128
+
+clip_model: '/path/to/pretrained_clip_model'
+template: '' # 'a {}.' or 'a photo of a {}.'
+
+batch_size: 1
+eval_batch_size: 512
+epochs: 1
+theta: 0.3
+mu: 32
+alpha: .1
+beta: 1.
+gamma: 1.
+phi: .2
+optim: 'sgd'
+lr_image: 0.001
+lr_text: 0.001
+is_accessible_bank_count: 1
+seed: 2024
